@@ -1,0 +1,100 @@
+from flask import Flask, render_template, url_for, request, redirect
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///datebase.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATION'] = False
+db = SQLAlchemy(app)
+app.app_context().push()
+
+class Article(db.Model):
+    id = db.Column(db.Integer, primary_key = True)    
+    name = db.Column(db.Text, nullable = False)
+    surname = db.Column(db.Text, nullable = False)
+    username = db.Column(db.Text, nullable = False)
+    work = db.Column(db.Text, nullable = False)
+
+    date = db.Column(db.DateTime, default = datetime.utcnow)
+
+    def __repr__ (self):
+        return '<Article %r>' % self.id
+
+@app.route("/")
+@app.route("/home")
+def hello_world():
+    return render_template("index.html")
+
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
+@app.route("/posts")
+def posts():
+    articles = Article.query.order_by(Article.date.desc()).all() 
+    return render_template("posts.html", articles = articles)
+
+
+@app.route("/posts/<int:id>")
+def post_editor(id):
+    article = Article.query.get(id) 
+    return render_template("post_editor.html", article = article)
+
+
+@app.route('/posts/<int:id>/del')
+def post_delete(id):
+    article = Article.query.get_or_404(id)
+    try:
+        db.session.delete(article)
+        db.session.commit()
+        return redirect("/posts")
+    except:
+        return "Eror while deleting"
+    
+
+@app.route('/posts/<int:id>/update', methods = ['POST', 'GET'])
+
+def update(id):
+    article = Article.query.get(id)
+    if request.method == 'POST':
+        
+        article.name = request.form['name']
+        article.surname = request.form['surname']
+        article.username = request.form['username']
+        article.work = request.form['work']
+
+        try:
+            db.session.add(article)
+            db.session.commit()
+            return redirect('/posts')
+        except:
+            return "Error while updating"
+    else:
+        return render_template("update.html", article = article)
+
+@app.route('/create-article', methods = ['POST', 'GET'])
+def article():
+    if request.method == 'POST':
+        
+        name = request.form['name']
+        surname = request.form['surname']
+        username = request.form['username']
+        work = request.form['work']
+
+        article = Article(name = name, surname = surname, username = username, work = work)
+
+        try:
+            db.session.add(article)
+            db.session.commit()
+            return redirect('/posts')
+        except:
+            return "Error"
+    else:
+        return render_template("create-article.html")
+
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
