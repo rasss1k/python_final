@@ -5,6 +5,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -29,7 +30,9 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(20), nullable=False, unique=True)
     password = db.Column(db.String(20), nullable=False)
 
-
+class SearchForm(FlaskForm):
+    search = StringField("Searched")
+    submit = SubmitField("Submit")
 
 class RegisterForm(FlaskForm):
     username = StringField(validators= [InputRequired(), Length(
@@ -61,6 +64,7 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String, nullable = False)
     price = db.Column(db.Integer, nullable = False)
+    img = db.Column(db.String(30))
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     author = db.relationship('User', backref='posts')
 
@@ -102,7 +106,7 @@ def dashboard():
 @app.route('/index')
 @login_required
 def index():
-    item = Item.query.order_by(Item.price).all()
+    item = Item.query.order_by(Item.id).all()
     return render_template('index.html', item=item)
 
 
@@ -168,9 +172,10 @@ def create():
     if request.method == 'POST':
         title = request.form['title']
         price = request.form['price']
-
-        item = Item(title=title, price=price, author=current_user)
-
+        img = request.files['img']
+        if img:
+            img.save(f"static/uploads/{secure_filename(img.filename)}")
+        item = Item(title=title, price=price, author=current_user, img=secure_filename(img.filename))
         try:
             db.session.add(item)
             db.session.commit()
@@ -178,7 +183,6 @@ def create():
         except:
             return "Error"
     return render_template("create.html")
-
 
 
 if __name__ == '__main__':

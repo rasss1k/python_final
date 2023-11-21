@@ -3,13 +3,16 @@
 	<title>Creating</title>
 {% endblock %}
 {% block body %}
-    <div class = "container" >
-        <h1> Item add</h1>
-        <form method = "post">
+            <br>
+            <br>
+        <h1 class=""> Item add</h1>
+            <div class = "container d-flex justify-content-center align-items-center" >
+        <form method = "post" enctype="multipart/form-data">
+            <label for="img">Upload your picture</label>
+            <input autocomplete="off" accept=".jpg, .jpeg, .png" type="file" name="img" id="img">
             <input type = "text" class = "form-control" name = "title" id = "title" placeholder="type the name"><br>
             <input type = "number" class = "form-control" name = "price" id = "price" placeholder="input the price"><br>
-
             <button class = "btn btn-success" type = "submit" > Submit</button>
         </form>
-    </div>
+                </div>
 {% endblock %}
