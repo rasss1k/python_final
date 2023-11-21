@@ -1,4 +1,4 @@
-{% extends 'fundument.html' %}
+{% extends 'dashboard.html' %}
 
 
 {% block title %}
@@ -8,18 +8,21 @@ CV Editor
 {% block body %}
 <div class = "container">
   <br>
-  <h3>{{article.username}}</h3>    
     <br><section class="py-5 text-center container">
       <div class="row py-lg-5">
         <div class="col-lg-6 col-md-8 mx-auto">
-          <h1 class="fw-light">{{article.name}} {{article.surname}}</h1>
-          <p class="lead text-body-secondary">{{article.work}}</p>
-          <p>
-            <a href="/posts/{{article.id}}/update" class="btn btn-primary my-2">Edit</a>
-            <a href="/posts/{{article.id}}/del" class="btn btn-secondary my-2 btn-danger">Delete</a>
-          </p>
+          <h1 class="fw-light">{{item.title}}</h1>
+          <p class="lead text-body-secondary">{{item.price}}</p>
+          <p class="text-body-secondary">Author: {{ item.author.username }}</p>
+                 {% if current_user.is_authenticated and item.author == current_user %}
+                    <p>
+                        <a href="/index/{{item.id}}/update" class="btn btn-primary my-2">Edit</a>
+                        <a href="/index/{{item.id}}/del" class="btn btn-secondary my-2 btn-danger">Delete</a>
+                    </p>
+                {% endif %}
         </div>
-      </div>
+      
+    </div>
     </section>
 </div>
 {%endblock%}

@@ -1,100 +1,185 @@
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, redirect, request, abort
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import InputRequired, Length, ValidationError
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///datebase.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATION'] = False
-db = SQLAlchemy(app)
+
+db = SQLAlchemy()
+bcrypt = Bcrypt(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SECRET_KEY'] = 'thisisasecretkey'
+db.init_app(app)
 app.app_context().push()
 
-class Article(db.Model):
-    id = db.Column(db.Integer, primary_key = True)    
-    name = db.Column(db.Text, nullable = False)
-    surname = db.Column(db.Text, nullable = False)
-    username = db.Column(db.Text, nullable = False)
-    work = db.Column(db.Text, nullable = False)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
 
-    date = db.Column(db.DateTime, default = datetime.utcnow)
-
-    def __repr__ (self):
-        return '<Article %r>' % self.id
-
-@app.route("/")
-@app.route("/home")
-def hello_world():
-    return render_template("index.html")
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
-@app.route("/about")
-def about():
-    return render_template("about.html")
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), nullable=False, unique=True)
+    password = db.Column(db.String(20), nullable=False)
 
 
-@app.route("/posts")
-def posts():
-    articles = Article.query.order_by(Article.date.desc()).all() 
-    return render_template("posts.html", articles = articles)
+
+class RegisterForm(FlaskForm):
+    username = StringField(validators= [InputRequired(), Length(
+        min=4, max=20)], render_kw={"placeholder": "Username"})
+
+    password = PasswordField(validators= [InputRequired(), Length(
+        min=4, max=20)], render_kw={"placeholder": "Password"})
+
+    submit = SubmitField("Register")
+
+    def validate_username(self, username):
+        existing_user_username = User.query.filter_by(
+            username=username.data).first()
+        if existing_user_username:
+            raise ValidationError("That username already exists. Please choose a different one.")
 
 
-@app.route("/posts/<int:id>")
+class LoginForm(FlaskForm):
+    username = StringField(validators= [InputRequired(), Length(
+        min=4, max=20)], render_kw={"placeholder": "Username"})
+
+    password = PasswordField(validators= [InputRequired() , Length(
+        min=4, max=20)], render_kw={"placeholder": "Password"})
+
+    submit = SubmitField("Login")
+
+
+class Item(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    title = db.Column(db.String, nullable = False)
+    price = db.Column(db.Integer, nullable = False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    author = db.relationship('User', backref='posts')
+
+    def repr (self):
+        return '<Item %r>' % self.title
+
+
+@app.route('/')
+@app.route('/home')
+def home():
+    return render_template('home.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:
+            if bcrypt.check_password_hash(user.password, form.password.data):
+                login_user(user)
+                return redirect(url_for('index'))
+    return render_template('login.html', form=form)
+
+
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
+
+
+@app.route('/index')
+@login_required
+def index():
+    item = Item.query.order_by(Item.price).all()
+    return render_template('index.html', item=item)
+
+
+
+@app.route("/index/<int:id>")
 def post_editor(id):
-    article = Article.query.get(id) 
-    return render_template("post_editor.html", article = article)
+    item = Item.query.get(id) 
+    return render_template("post_editor.html", item = item)
 
+@app.route('/abort')
+def abort():
+    return render_template('abort.html')
 
-@app.route('/posts/<int:id>/del')
+@app.route('/index/<int:id>/del')
+@login_required
 def post_delete(id):
-    article = Article.query.get_or_404(id)
+    item = Item.query.get_or_404(id)
+    if item.author != current_user:
+        return redirect ("/abort")
     try:
-        db.session.delete(article)
+        db.session.delete(item)
         db.session.commit()
-        return redirect("/posts")
+        return redirect("/index")
     except:
-        return "Eror while deleting"
+        return "Error while deleting"
     
 
-@app.route('/posts/<int:id>/update', methods = ['POST', 'GET'])
-
+@app.route('/index/<int:id>/update', methods=['POST', 'GET'])
+@login_required
 def update(id):
-    article = Article.query.get(id)
+    item = Item.query.get(id)
+    if item.author != current_user:
+        return redirect ("/abort")
+
     if request.method == 'POST':
-        
-        article.name = request.form['name']
-        article.surname = request.form['surname']
-        article.username = request.form['username']
-        article.work = request.form['work']
+        item.title = request.form['title']
+        item.price = request.form['price']
 
         try:
-            db.session.add(article)
             db.session.commit()
-            return redirect('/posts')
+            return redirect('/index')
         except:
             return "Error while updating"
     else:
-        return render_template("update.html", article = article)
+        return render_template("update.html", item=item)
 
-@app.route('/create-article', methods = ['POST', 'GET'])
-def article():
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data)
+        new_user = User(username=form.username.data, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login'))
+
+    return render_template('register.html', form=form)
+
+@app.route("/create", methods=['POST', 'GET'])
+@login_required
+def create():
     if request.method == 'POST':
-        
-        name = request.form['name']
-        surname = request.form['surname']
-        username = request.form['username']
-        work = request.form['work']
+        title = request.form['title']
+        price = request.form['price']
 
-        article = Article(name = name, surname = surname, username = username, work = work)
+        item = Item(title=title, price=price, author=current_user)
 
         try:
-            db.session.add(article)
+            db.session.add(item)
             db.session.commit()
-            return redirect('/posts')
+            return redirect('/index')
         except:
             return "Error"
-    else:
-        return render_template("create-article.html")
+    return render_template("create.html")
 
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
