@@ -13,16 +13,12 @@ CV Editor
         <div class="col-lg-6 col-md-8 mx-auto">
           <h1 class="fw-light">{{item.title}}</h1>
           <p class="lead text-body-secondary">{{item.price}}</p>
-          <p class="text-body-secondary">Author: {{ item.author.username }}</p>
-                 {% if current_user.is_authenticated and item.author == current_user %}
-                    <p>
-                        <a href="/index/{{item.id}}/update" class="btn btn-primary my-2">Edit</a>
-                        <a href="/index/{{item.id}}/del" class="btn btn-secondary my-2 btn-danger">Delete</a>
-                    </p>
-                {% endif %}
+          <p>
+            <a href="/index/{{item.id}}/update" class="btn btn-primary my-2">Edit</a>
+            <a href="/index/{{item.id}}/del" class="btn btn-secondary my-2 btn-danger">Delete</a>
+          </p>
         </div>
-      
-    </div>
+      </div>
     </section>
 </div>
 {%endblock%}
