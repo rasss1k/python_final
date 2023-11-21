@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, request
+from flask import Flask, render_template, url_for, redirect, request, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -28,6 +28,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False, unique=True)
     password = db.Column(db.String(20), nullable=False)
+
 
 
 class RegisterForm(FlaskForm):
@@ -60,6 +61,8 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String, nullable = False)
     price = db.Column(db.Integer, nullable = False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    author = db.relationship('User', backref='posts')
 
     def repr (self):
         return '<Item %r>' % self.title
@@ -103,6 +106,49 @@ def index():
     return render_template('index.html', item=item)
 
 
+
+@app.route("/index/<int:id>")
+def post_editor(id):
+    item = Item.query.get(id) 
+    return render_template("post_editor.html", item = item)
+
+@app.route('/abort')
+def abort():
+    return render_template('abort.html')
+
+@app.route('/index/<int:id>/del')
+@login_required
+def post_delete(id):
+    item = Item.query.get_or_404(id)
+    if item.author != current_user:
+        return redirect ("/abort")
+    try:
+        db.session.delete(item)
+        db.session.commit()
+        return redirect("/index")
+    except:
+        return "Error while deleting"
+    
+
+@app.route('/index/<int:id>/update', methods=['POST', 'GET'])
+@login_required
+def update(id):
+    item = Item.query.get(id)
+    if item.author != current_user:
+        return redirect ("/abort")
+
+    if request.method == 'POST':
+        item.title = request.form['title']
+        item.price = request.form['price']
+
+        try:
+            db.session.commit()
+            return redirect('/index')
+        except:
+            return "Error while updating"
+    else:
+        return render_template("update.html", item=item)
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
@@ -117,13 +163,13 @@ def register():
     return render_template('register.html', form=form)
 
 @app.route("/create", methods=['POST', 'GET'])
+@login_required
 def create():
     if request.method == 'POST':
-
         title = request.form['title']
         price = request.form['price']
 
-        item = Item(title=title, price=price)
+        item = Item(title=title, price=price, author=current_user)
 
         try:
             db.session.add(item)
@@ -132,6 +178,7 @@ def create():
         except:
             return "Error"
     return render_template("create.html")
+
 
 
 if __name__ == '__main__':
