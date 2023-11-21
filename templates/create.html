@@ -3,16 +3,58 @@
 	<title>Creating</title>
 {% endblock %}
 {% block body %}
-            <br>
-            <br>
-        <h1 class=""> Item add</h1>
-            <div class = "container d-flex justify-content-center align-items-center" >
-        <form method = "post" enctype="multipart/form-data">
-            <label for="img">Upload your picture</label>
-            <input autocomplete="off" accept=".jpg, .jpeg, .png" type="file" name="img" id="img">
-            <input type = "text" class = "form-control" name = "title" id = "title" placeholder="type the name"><br>
-            <input type = "number" class = "form-control" name = "price" id = "price" placeholder="input the price"><br>
-            <button class = "btn btn-success" type = "submit" > Submit</button>
-        </form>
+
+<div class="container">
+    <main>
+      <div class="py-5 text-center">
+        <h2>Creating the post for item's</h2>
+        <p class="lead">In this page you must provide the informathion about the Item for sale.</p>
+      </div>
+  
+      <div class="row g-5">        
+        <div class="col-md-7 col-lg-12">
+          <h4 class="mb-3">Information about the item</h4>
+          <form method = "post" enctype="multipart/form-data" class="needs-validation" novalidate="">
+            <div class="row g-3">
+              <div class="col-sm-12">
+                <label for="firstName" class="form-label">Name</label>
+                <input type="text" class="form-control" name = "title" id="title" placeholder="" value="" required="">
+                <div class="invalid-feedback">
+                  Valid name is required.
                 </div>
+              </div>
+  
+              <div class="col-sm-12">
+                <label for="lastName" class="form-label">Using information<span class="text-body-secondary">(Necessarily)</span></label>
+                <input type="text" class="form-control" id="text" name = "text" placeholder="Inpute the information" value="" required="">
+            
+              </div> 
+
+              <div class="col-sm-12">
+                <label for="lastName" class="form-label">Price</label>
+                <input type="number" class="form-control" id="price" name = "price" placeholder="Price" value="" required="">
+            
+              </div> 
+
+              <div class="col-md-5">
+                <label for="country" class="form-label">Image</label>
+                <input autocomplete="off" accept=".jpg, .jpeg, .png" type="file" name="img" id="img" class="form-select" id="country" required="">
+              </div>
+  
+  
+  
+            </div>
+  
+            
+  
+            <hr class="my-4">
+  
+            <button class="w-100 btn btn-primary btn-lg" type="submit">Submit</button>
+          </form>
+        </div>
+      </div>
+    </main>  
+  </div>
+
+</div>
 {% endblock %}

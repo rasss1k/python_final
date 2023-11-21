@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, request, abort
+from flask import Flask, render_template, url_for, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -63,6 +63,7 @@ class LoginForm(FlaskForm):
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String, nullable = False)
+    text = db.Column(db.String, nullable = False)
     price = db.Column(db.Integer, nullable = False)
     img = db.Column(db.String(30))
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -142,7 +143,8 @@ def update(id):
         return redirect ("/abort")
 
     if request.method == 'POST':
-        item.title = request.form['title']
+        item.title = request.form['title']          
+        item.text = request.form['text']       
         item.price = request.form['price']
 
         try:
@@ -170,12 +172,13 @@ def register():
 @login_required
 def create():
     if request.method == 'POST':
-        title = request.form['title']
+        title = request.form['title']        
+        text = request.form['text']
         price = request.form['price']
         img = request.files['img']
         if img:
             img.save(f"static/uploads/{secure_filename(img.filename)}")
-        item = Item(title=title, price=price, author=current_user, img=secure_filename(img.filename))
+        item = Item(title=title, price=price, text = text, author=current_user, img=secure_filename(img.filename))
         try:
             db.session.add(item)
             db.session.commit()
