@@ -71,4 +71,4 @@ tabsHeader.forEach((item) => {
 
 
 nextBtn.addEventListener('click', nextSlide);
-prevBtn.addEventListener('click', prevSlide);
+prevBtn.addEventListener('click', prevSlide);   

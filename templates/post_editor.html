@@ -7,22 +7,29 @@
 {% block body %}
 <div class = "container">
   <br>
-    <br><section class="py-5 text-center container">
-      <div class="row py-lg-5">
-        <div class="col-lg-6 col-md-8 mx-auto">
-            <img width="420" height="340" src="{{ url_for('static', filename='uploads/' + item.img) }}">
-          <h1 class="fw-light">{{item.title}}</h1>
-          <p class="lead text-body-secondary">{{item.price}}</p>
-            <p class="text-body-secondary">Author: {{ item.author.username }}</p>
-                 {% if current_user.is_authenticated and item.author == current_user %}
+  <div class="col-md-12">
+    <br>
+    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+      <div class="col p-4 d-flex flex-column position-static">
+        <p class="text-body-secondary">Author: {{ item.author.username }}</p>
+        <h3 class="mb-0">{{item.title}}</h3>
+        <br>
+        <p class="card-text mb-auto">{{item.text}}</p>
+        <br>
+        <div class="mb-1 text-body-secondary">{{item.price}}₸</div>
+        {% if current_user.is_authenticated and item.author == current_user %}
                     <p>
                         <a href="/index/{{item.id}}/update" class="btn btn-primary my-2">Edit</a>
                         <a href="/index/{{item.id}}/del" class="btn btn-secondary my-2 btn-danger">Delete</a>
                     </p>
                 {% endif %}
-        </div>
-      
+      </div>
+      <div class="col-auto d-none d-lg-block">
+        <img width="420" height="340" src="{{ url_for('static', filename='uploads/' + item.img) }}">
+      </div>
     </div>
-    </section>
+  </div>
+
+
 </div>
 {%endblock%}
