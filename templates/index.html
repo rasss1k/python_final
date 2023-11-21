@@ -1,6 +1,6 @@
 {% extends 'dashboard.html' %}
 {% block title %}
-	<title>index</title>
+	<title>Main</title>
 {% endblock %}
 
 {% block body %}
@@ -69,9 +69,9 @@
               <div class="d-flex justify-content-between align-items-center">
                 <div class="btn-group">
                   <button type="button" class="btn btn-sm btn-outline-secondary"><a class="text-decoration-none text-black" href="/index/{{ el.id }}">About</a></button>                  
-                  <button type="button" class="btn btn-sm btn-outline-secondary">Buy</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary"><a class="text-decoration-none text-black" href="/index/buy/{{ el.id }}">Buy</a></button>
                 </div>
-                <h3 class="card-title pricing-card-title">{{ el.price }}<small class="text-body-secondary fw-light">₸</small></h1>
+                <h1 class="card-title pricing-card-title">{{ el.price }}<small class="text-body-secondary fw-light">₸</small></h1>
               </div>
             </div>
           </div>

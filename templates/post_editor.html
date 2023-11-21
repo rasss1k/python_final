@@ -1,7 +1,7 @@
 {% extends 'dashboard.html' %}
 
 {% block title %}
-	<title>About of item</title>
+	<title>Editor</title>
 {% endblock %}
 
 {% block body %}
@@ -10,6 +10,7 @@
     <br><section class="py-5 text-center container">
       <div class="row py-lg-5">
         <div class="col-lg-6 col-md-8 mx-auto">
+            <img width="420" height="340" src="{{ url_for('static', filename='uploads/' + item.img) }}">
           <h1 class="fw-light">{{item.title}}</h1>
           <p class="lead text-body-secondary">{{item.price}}</p>
             <p class="text-body-secondary">Author: {{ item.author.username }}</p>

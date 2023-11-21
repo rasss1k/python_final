@@ -91,11 +91,24 @@ def login():
     return render_template('login.html', form=form)
 
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data)
+        new_user = User(username=form.username.data, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login'))
+
+    return render_template('register.html', form=form)
+
 @app.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 
 @app.route('/dashboard')
@@ -110,16 +123,25 @@ def index():
     item = Item.query.order_by(Item.id).all()
     return render_template('index.html', item=item)
 
-
-
 @app.route("/index/<int:id>")
 def post_editor(id):
     item = Item.query.get(id) 
     return render_template("post_editor.html", item = item)
 
-@app.route('/abort')
-def abort():
-    return render_template('abort.html')
+@app.route("/index/buy/<int:id>")
+def buy(id):
+    item = Item.query.get(id) 
+    return render_template("buy.html", item = item)
+
+@app.route("/index/buy/<int:id>/visa")
+def visa(id):
+    item = Item.query.get(id) 
+    return render_template("visa.html", item = item)
+
+@app.route("/index/buy/<int:id>/kaspi")
+def kaspi(id):
+    item = Item.query.get(id) 
+    return render_template("kaspi.html", item = item)
 
 @app.route('/index/<int:id>/del')
 @login_required
@@ -155,18 +177,17 @@ def update(id):
     else:
         return render_template("update.html", item=item)
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    form = RegisterForm()
+@app.route('/abort')
+def abort():
+    return render_template('abort.html')
 
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data)
-        new_user = User(username=form.username.data, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
+@app.route('/aboutus')
+def aboutus():
+    return render_template('aboutus.html')
 
-    return render_template('register.html', form=form)
+@app.route('/goal')
+def goal():
+    return render_template('goal.html')
 
 @app.route("/create", methods=['POST', 'GET'])
 @login_required
