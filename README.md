@@ -35,7 +35,9 @@ To get started with Pharmacy / Drug Story, follow the instructions below:
 
 1. pip install -r requirements.txt
 
-### Usage
+## Video
+
+- https://youtu.be/BN1ceZ1BvMs
 
 ## Contributors
 
