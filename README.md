@@ -42,6 +42,7 @@ To get started with Pharmacy / Drug Story, follow the instructions below:
 ## Contributors
 
 - PROJECT LINK ([GitHub](https://github.com/rasss1k/python_final.git))
+- Host (http://rasik005.pythonanywhere.com/)
 
 ## License
 
